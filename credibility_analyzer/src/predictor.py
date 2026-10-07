@@ -6,13 +6,19 @@ from train_pytorch import NewsClassifierNN
 
 class ArticlePredictor:
     def __init__(self):
+        # 1. Load the fitted TF-IDF Vectorizer (10,000 features)
         self.vectorizer = joblib.load("models/tfidf_vectorizer.pkl")
         
+        # 2. Load Scikit-Learn Models
         self.logistic = joblib.load("models/logistic_model.pkl")
         self.random_forest = joblib.load("models/random_forest_model.pkl")
         
-        self.pytorch_model = NewsClassifierNN(input_dim=5000)
-        self.pytorch_model.load_state_dict(torch.load("models/pytorch_model.pt"))
+        # 3. FIX: Dynamically infer input dimension from vectorizer (10000 features)
+        input_dim = len(self.vectorizer.get_feature_names_out())
+        self.pytorch_model = NewsClassifierNN(input_dim=input_dim)
+        
+        # 4. FIX: Load .pth extension matching train_pytorch.py
+        self.pytorch_model.load_state_dict(torch.load("models/pytorch_model.pth", weights_only=True))
         self.pytorch_model.eval()
 
     def predict(self, raw_text):
@@ -20,7 +26,6 @@ class ArticlePredictor:
         tfidf_features = self.vectorizer.transform([cleaned])
         
         log_prob = self.logistic.predict_proba(tfidf_features)[0][1] 
-        
         rf_prob = self.random_forest.predict_proba(tfidf_features)[0][1] 
         
         tensor_features = torch.tensor(tfidf_features.toarray(), dtype=torch.float32)

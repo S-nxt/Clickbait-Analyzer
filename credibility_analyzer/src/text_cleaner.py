@@ -2,23 +2,38 @@ import re
 import nltk
 from nltk.corpus import stopwords
 
+# Download NLTK stopwords if not already available
 nltk.download('stopwords', quiet=True)
 
-_NEGATION_WORDS = {
-    'no', 'not', 'nor', 'neither', 'never', 'none',
-    'cannot', 'cant', 'couldnt', 'doesnt', 'dont', 'isnt',
-    'shouldnt', 'wasnt', 'wont', 'wouldnt',
+# Load standard NLTK English stopwords
+default_stopwords = set(stopwords.words('english'))
+
+# List of critical negation words to PRESERVE in text analysis
+NEGATION_WORDS = {
+    'no', 'not', 'nor', 'neither', 'never', 'none', 
+    'doesnt', 'isnt', 'wasnt', 'arent', 'werent', 
+    'wouldnt', 'couldnt', 'shouldnt', 'cant', 'cannot', 'dont'
 }
-_STOPWORDS = set(stopwords.words('english')) - _NEGATION_WORDS
+
+# Remove negation words from the stopword removal list
+CUSTOM_STOPWORDS = default_stopwords - NEGATION_WORDS
 
 
-def clean_text(text: object) -> str:
-    """Normalize article text using the same rules used during training."""
+def clean_text(text):
+    """
+    Cleans raw text while preserving negations essential for context and sentiment.
+    """
     if not isinstance(text, str):
         return ""
-
+    
+    # 1. Lowercase text
     text = text.lower()
-    text = text.replace("'", "").replace("\u2019", "")
-    text = re.sub(r'[^a-zA-Z\s]', ' ', text)
-    words = [word for word in text.split() if word not in _STOPWORDS]
-    return " ".join(words)
+    
+    # 2. Keep only letters and spaces (removes special symbols)
+    text = re.sub(r'[^a-zA-Z\s]', '', text)
+    
+    # 3. Filter out stopwords EXCEPT preserved negation words
+    words = text.split()
+    cleaned_words = [word for word in words if word not in CUSTOM_STOPWORDS]
+    
+    return " ".join(cleaned_words)
