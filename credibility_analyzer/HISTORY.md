@@ -75,7 +75,7 @@ The displayed result is essentially a credibility or clickbait score.
   Fetches a web page and extracts visible article text from the HTML.
 
 - `src/text_cleaner.py`  
-  Present in the project but currently empty/unused. The cleaning logic is actually defined in `train_models.py`.
+  Provides the shared cleaning logic used by both model training and prediction.
 
 ### Data folder
 - `data/Fake_Real_News_Data.csv`  
@@ -319,7 +319,7 @@ This script:
 
 This project is a working prototype and not a finished production solution. Several practical issues should be noted:
 
-1. `src/text_cleaner.py` is empty and not used by the main app.  
+1. `src/text_cleaner.py` is now the shared cleaner used by training and the main app.  
    The actual cleaning function lives in `train_models.py`.
 
 2. The model names are inconsistent.  

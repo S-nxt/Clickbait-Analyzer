@@ -1,24 +1,11 @@
 import pandas as pd
 import joblib
-import re
-import nltk
-from nltk.corpus import stopwords
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
-
-nltk.download('stopwords')
-stop_words = set(stopwords.words('english'))
-
-def clean_text(text):
-    if not isinstance(text, str):
-        return ""
-    text = text.lower() 
-    text = re.sub(r'[^a-zA-Z\s]', '', text) 
-    words = [word for word in text.split() if word not in stop_words] 
-    return " ".join(words)
+from src.text_cleaner import clean_text
 
 print("1. Loading Dataset...")
 df = pd.read_csv("data/Fake_Real_News_Data.csv")
@@ -29,13 +16,29 @@ df['clean_text'] = df['full_text'].apply(clean_text)
 
 df['target'] = df['label'].map({'FAKE': 1, 'REAL': 0})
 
-X_train, X_test, y_train, y_test = train_test_split(df['clean_text'], df['target'], test_size=0.2, random_state=42)
+# CHANGED: test_size=0.3 (70% Train / 30% Test) + stratify to keep label balance
+X_train, X_test, y_train, y_test = train_test_split(
+    df['clean_text'], 
+    df['target'], 
+    test_size=0.3, 
+    random_state=42,
+    stratify=df['target']
+)
 
-print("3. Extracting TF-IDF Features...")
-vectorizer = TfidfVectorizer(max_features=5000)
+print(f"Dataset Split -> Training: {len(X_train)} samples | Testing: {len(X_test)} samples")
+
+print("3. Extracting TF-IDF Features (with Bi-grams & Tri-grams)...")
+# MOVED: Define vectorizer settings BEFORE fitting
+vectorizer = TfidfVectorizer(
+    max_features=10000,
+    ngram_range=(1, 3),
+    sublinear_tf=True
+)
+
 X_train_tfidf = vectorizer.fit_transform(X_train)
 X_test_tfidf = vectorizer.transform(X_test)
 
+# Save the fitted vectorizer
 joblib.dump(vectorizer, "models/tfidf_vectorizer.pkl")
 
 print("4. Training Logistic Regression...")

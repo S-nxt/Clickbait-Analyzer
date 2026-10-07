@@ -1,7 +1,7 @@
 import joblib
 import torch
 import torch.nn as nn
-from train_models import clean_text
+from src.text_cleaner import clean_text
 from train_pytorch import NewsClassifierNN
 
 class ArticlePredictor:

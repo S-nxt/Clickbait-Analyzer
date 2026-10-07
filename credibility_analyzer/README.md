@@ -134,7 +134,7 @@ credibility_analyzer/
 	├── gui.py                 # PyQt5 user interface
 	├── predictor.py           # Model loading and inference
 	├── scraper.py             # URL fetching and article text extraction
-	├── text_cleaner.py        # Currently empty; cleaning is in train_models.py
+	├── text_cleaner.py        # Shared text preprocessing for training and prediction
 	└── __init__.py
 ```
 

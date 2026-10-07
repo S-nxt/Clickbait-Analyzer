@@ -2,18 +2,23 @@ import re
 import nltk
 from nltk.corpus import stopwords
 
-# Ensure stopwords are downloaded
 nltk.download('stopwords', quiet=True)
-stop_words = set(stopwords.words('english'))
 
-def clean_text(text):
-    """
-    Cleans raw article text by lowercasing, removing non-alphabetic
-    characters, and stripping NLTK english stopwords.
-    """
+_NEGATION_WORDS = {
+    'no', 'not', 'nor', 'neither', 'never', 'none',
+    'cannot', 'cant', 'couldnt', 'doesnt', 'dont', 'isnt',
+    'shouldnt', 'wasnt', 'wont', 'wouldnt',
+}
+_STOPWORDS = set(stopwords.words('english')) - _NEGATION_WORDS
+
+
+def clean_text(text: object) -> str:
+    """Normalize article text using the same rules used during training."""
     if not isinstance(text, str):
         return ""
+
     text = text.lower()
-    text = re.sub(r'[^a-zA-Z\s]', '', text)
-    words = [word for word in text.split() if word not in stop_words]
+    text = text.replace("'", "").replace("\u2019", "")
+    text = re.sub(r'[^a-zA-Z\s]', ' ', text)
+    words = [word for word in text.split() if word not in _STOPWORDS]
     return " ".join(words)

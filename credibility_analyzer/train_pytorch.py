@@ -5,7 +5,8 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import train_test_split
-from train_models import clean_text  
+from src.text_cleaner import clean_text
+from transformers import DistilBertTokenizer, DistilBertForSequenceClassification, Trainer, TrainingArguments
 
 print("1. Loading Data & TF-IDF Vectorizer...")
 df = pd.read_csv("data/Fake_Real_News_Data.csv")
@@ -16,6 +17,13 @@ df['target'] = df['label'].map({'FAKE': 1, 'REAL': 0})
 vectorizer = joblib.load("models/tfidf_vectorizer.pkl")
 X = vectorizer.transform(df['clean_text']).toarray()
 y = df['target'].values
+
+tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
+model = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased', num_labels=2)
+
+# Tokenize preserves negations, word order, and full sentence context natively
+def tokenize_func(examples):
+    return tokenizer(examples['text'], truncation=True, padding='max_length', max_length=128)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
