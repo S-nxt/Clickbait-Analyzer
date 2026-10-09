@@ -9,6 +9,8 @@ from src.text_cleaner import clean_text
 
 print("1. Loading Dataset...")
 df = pd.read_csv("data/Fake_Real_News_Data.csv")
+df['full_text'] = df['title'].fillna('') + " " + df['text'].fillna('')
+df.drop_duplicates(subset=['full_text'], inplace=True)
 
 df['full_text'] = df['title'].fillna('') + " " + df['text'].fillna('')
 print("2. Cleaning Text (this takes ~10 seconds)...")
